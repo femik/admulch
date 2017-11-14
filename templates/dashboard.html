@@ -1,0 +1,253 @@
+{% extends "layout.html" %}
+{% block title %}Energetik Dashboard{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+    body {
+        background-color: #FAFAFA;
+    }
+
+    #myViewerDiv {
+        height: 400px;
+        width: 100%;
+        background-color: blue;
+    }
+  </style>
+  <link rel="stylesheet" href="https://developer.api.autodesk.com/viewingservice/v1/viewers/style.min.css?v=v2.10" type="text/css">
+  <script>
+      function myMap() {
+        var mapOptions = {
+              center: new google.maps.LatLng(51.5, -0.12),
+              zoom: 10,
+              mapTypeId: google.maps.MapTypeId.HYBRID
+        }
+        var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+      }
+  </script>
+  <!-- script src="https://www/maps/api/js?key=AIzaSyDPNDhEk2upn3eMVrpYC2dPfSMcDzdoXxc&callback=myMap"></script -->  
+  <script src="https://developer.api.autodesk.com/viewingservice/v1/viewers/three.min.js"></script>
+  <script src="https://developer.api.autodesk.com/viewingservice/v1/viewers/viewer3D.min.js?v=v2.10"></script>
+{% endblock %}
+{% block content %}
+      <div class="container documents">
+        <h2>Building Information</h2>      
+        <div class="row">
+          <div class="col-md-6">
+            <div class="panel panel-success">
+              <div class="panel-heading">
+                <h3 class="panel-title">Location</h3>
+              </div>
+              <div class="panel-body">
+                <iframe
+                  height="450"
+                  width="100%"
+                  frameborder="0" style="border:0"
+                  src="https://osndfosndwww.zxczxocgoogle.com/maps/embed/v1/place?key=AIzaSyDPNDhEk2upn3eMVrpYC2dPfSMcDzdoXxc
+                    &q={{ data.address | replace(" ", "+")}}" allowfullscreen>
+                </iframe>
+              </div>
+            </div>
+            <div class="panel panel-primary">
+              <div class="panel-heading">
+                <h3 class="panel-title">Floor Details</h3>
+              </div>
+              <table class="table">
+                  <tbody>
+                    <tr>
+                      <td>Floor Area Ratio</td>
+                      <td>{{ data.floor_area_ratio }}</td>
+                    </tr>
+                    <tr>
+                      <td>Floor Area</td>
+                      <td>{{ data.floor_area }}</td>
+                    </tr>
+                    <tr>
+                      <td>Number of Floors</td>
+                      <td>{{ data.number_of_floors }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+            </div>
+          
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Miscellaneous</h3>
+              </div>
+              <table class="table">
+                  <tbody>
+                    <tr>
+                      <td>Special District</td>
+                      <td>{{ data.special_district }}</td>
+                    </tr>
+                    <tr>
+                      <td>Maximum Building Width</td>
+                      <td>{{ data.max_building_width }}</td>
+                    </tr>
+                    <tr>
+                      <td>Front Setback</td>
+                      <td>{{ data.front_setback }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+            </div>
+          </div>
+          <div class="col-md-6">
+              <button type="button" class="btn btn-success btn-block">Start Scan</button>
+              <hr>
+
+              <script>
+                  $("button").click(function(){
+                      $.post("robot/move", function(data, status){
+                          console.log("Data: " + data + "\nStatus: " + status);
+                      });
+                  }); 
+              </script>
+              <div class="panel panel-danger">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Landmark Status</h3>
+                </div>
+                <div class="panel-body">
+                  {{ data.landmark }}
+                </div>
+              </div>
+              <div class="panel panel-info">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Registration Information</h3>
+                </div>
+                <table class="table">
+                    <tbody>
+                      <tr>
+                        <td>Year Built</td>
+                        <td>{{ data.year_built}}</td>
+                      </tr>
+                      <tr>
+                        <td>Building Age</td>
+                        <td>{{ data.building_age }}</td>
+                      </tr>
+                      <tr>
+                        <td>BIN Number</td>
+                        <td>{{ data.BIN_number }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+              </div>
+              <div class="panel panel-warning">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Classification</h3>
+                </div>
+                <table class="table">
+                    <tbody>
+                      <tr>
+                        <td>Building Class</td>
+                        <td>{{ data.building_class }}</td>
+                      </tr>
+                      <tr>
+                        <td>Financial Class</td>
+                        <td>{{ data.financial_class }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+              </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Setback and Height</h3>
+              </div>
+              <div class="panel-body">
+                Panel content
+              </div>
+            </div>
+            
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                  <h3 class="panel-title">3D Visualization</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="myViewerDiv"></div>
+                </div>
+            </div>
+                            
+            </div>
+                    
+        </div>
+      </div>
+      <script>
+          // var myViewerDiv = document.getElementById('myViewerDiv');
+          // var viewer = new Autodesk.Viewing.Private.GuiViewer3D(myViewerDiv);
+          // var options = {
+          //    'env' : 'Local',
+          //    'document' : 'http://developer-autodesk.github.io/translated-models/shaver/0.svf'
+          // };
+          // Autodesk.Viewing.Initializer(options, function() {
+          //   viewer.start(options.document, options);
+          //   var width = $("#myViewerDiv").css("width");
+          //   var style3D = "height: 400px; width:" + width + "; overflow: hidden;";
+          //   $('.adsk-viewing-viewer').attr('style', style3D);
+          // });
+
+          var viewer;
+          var options = {
+              env: 'AutodeskProduction',
+              getAccessToken: getForgeToken
+          }
+          
+          var documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6bmV3ZW5lcmdldGlrYnVja2V0cjV1Y3Fsb2FscmlreW91aWY0bTNtdHZkaWFsbGM5OWcvcnN0X2FkdmFuY2VkX3NhbXBsZV9wcm9qZWN0LnJ2dA';
+          
+          Autodesk.Viewing.Initializer(options, function onInitialized() {
+              Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+          });
+
+          function onLoadModelSuccess(model) {
+              console.log('onLoadModelSuccess()!');
+              console.log('Validate model loaded: ' + (viewer.model === model));
+              console.log(model);
+          }
+          
+          /**
+           * viewer.loadModel() failure callback.
+           * Invoked when there's an error fetching the SVF file.
+           */
+           
+          function onLoadModelError(viewerErrorCode) {
+              console.error('onLoadModelError() - errorCode:' + viewerErrorCode);
+          }
+
+          function onDocumentLoadFailure(viewerErrorCode) {
+              console.error('onDocumentLoadFailure() - errorCode:' + viewerErrorCode);
+          }
+
+          function onDocumentLoadSuccess(doc) {
+          
+              // A document contains references to 3D and 2D viewables.
+              var viewable = Autodesk.Viewing.Document.getSubItemsWithProperties(doc.getRootItem(), {
+                  'type': 'geometry',
+                  'role': '3d'
+              }, true);
+              if (viewable.length === 0) {
+                  console.error('Document contains no viewables.');
+                  return;
+              }
+          
+              // Choose any of the available viewable
+              var initialViewable = viewable[0]; // You can check for other available views in your model,
+              var svfUrl = doc.getViewablePath(initialViewable);
+              var modelOptions = {
+                  sharedPropertyDbPath: doc.getPropertyDbPath()
+              };
+          
+              var viewerDiv = document.getElementById('myViewerDiv');
+          
+              ///////////////USE ONLY ONE OPTION AT A TIME/////////////////////////
+          
+              /////////////////////// Headless Viewer /////////////////////////////
+              // viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+              //////////////////////////////////////////////////////////////////////
+          
+              //////////////////Viewer with Autodesk Toolbar///////////////////////
+              viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv);
+              //////////////////////////////////////////////////////////////////////
+          
+              viewer.start(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
+          }
+      </script>
+{% endblock %}
