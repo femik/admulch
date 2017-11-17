@@ -5,6 +5,7 @@ keyword_mulcher = KeywordMulcher()
 
 @app.route('/')
 def dashboard():
+    data = keyword_mulcher.get_data()
     return render_template('dashboard.html', data=data)
 
 @app.route('/update_crawler', methods=['POST'])
@@ -14,7 +15,7 @@ def update_crawler():
 
 @app.route('/empty_crawler', methods=['POST'])
 def empty_crawler():
-    keyword_mulcher.empty_crawl_list()
+    keyword_mulcher.empty()
     
 @app.route('/stop_crawler', methods=['POST'])
 def stop_crawler():

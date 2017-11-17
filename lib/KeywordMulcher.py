@@ -30,6 +30,25 @@ class KeywordMulcher:
 	brand_keywords_by_domain = {}
 	brand_keywords_by_page = {}
 
+    def __init__(self):
+        pass
+
+    def start(self):
+        mulch()
+
+    def stop(self):
+        self.stop_requested = True
+
+    def empty(self):
+        stop()
+        self.page_list = []
+        
+    def get_data(self):
+        return True
+
+    def process(self, data):
+        self.page_list.add(data)
+
 	def mulch(self):
 		for page in self.page_list:
 			print page
@@ -123,9 +142,6 @@ class KeywordMulcher:
 
 
 
-a = KeywordMulcher()
-a.mulch()
-a.do_print()
 #sample output
 #Ads for: www.grantland.com
 #Ads found on this domain:www.espn.com
