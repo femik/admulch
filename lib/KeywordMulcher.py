@@ -1,14 +1,6 @@
-
-import re
-import urllib
-import urllib2
-from BeautifulSoup import BeautifulSoup 
-import nltk
-import pattern.web 
-from pattern.web import URL, extension, plaintext
-from nltk.corpus import stopwords
-from urlparse import urlparse
-import collections
+from queue import Queue
+import Parser
+import Stats
 
 # A program to find the keywords/keyword density associated with various brands ads
 # it creates a filtered word dictionary for each page and sums the keywords 
@@ -25,109 +17,37 @@ import collections
 
 
 class KeywordMulcher:
-	page_list = ['http://www.yahoo.com', 'http://www.espn.com']
-	brand_keywords_all = {}
-	brand_keywords_by_domain = {}
-	brand_keywords_by_page = {}
+	url_queue = Queue()
+	stats = Stats()
 
     def __init__(self):
-        pass
+            self.url_queue.put('http://www.yahoo.com')
+            self.url_queue.put('http://www.espn.com')
+            self.started = False
 
     def start(self):
-        mulch()
+        self.started = True
+        while !self.url_queue.empty() and self.started:
+            url = self.url_queue.get()
+            mulch_thread = threading.Thread(target=Parser.analyze_page, args=(url, self.stats))
+            mulch_thread.start()
 
     def stop(self):
-        self.stop_requested = True
+        self.started = False
 
     def empty(self):
-        stop()
-        self.page_list = []
+        self.url_queue = Queue()
         
     def get_data(self):
-        return True
+        return stats.get()
 
     def process(self, data):
-        self.page_list.add(data)
+        for url in data:
+            self.url_queue.put(url)
 
-	def mulch(self):
-		for page in self.page_list:
-			print page
-			self.analyze_page(page)
-		print 'mulched'
+# should split into list parser, crawler, mulcher and reader classes
+# crawler shoudl run in background thread or process 
 
-	def is_ad_link(self, node, domain): #if its a link to anohter domain using a pic or swf, assume its an ad
-		if node.img or node.embed:
-			if domain not in node['href']:
-				if 'http' in node['href']:
-					return True
-		return False
-
-	def get_domain_stem(self, current_page):
-		o = urlparse(current_page)
-		return o.netloc.split('.')[-2]
-		# this should use tldextract
-
-	def get_domain(self, current_page):
-		o = urlparse(current_page)
-		return o.netloc
-
-	def get_ad_links(self, htmlsoup, current_page):
-		linkset = set()
-		for a in htmlsoup.findAll('a', href=True):
-			if self.is_ad_link(a, self.get_domain_stem(current_page)):
-				g = urllib2.urlopen(a['href'])
-				linkset.add(self.get_domain(g.geturl()))
-		return linkset
-
-
-	def build_counter(self, page_data): #strip text from web page, build dictionary/counter from it
-		s = pattern.web.plaintext(page_data).lower()
-		s = re.findall("\w+", s, re.U)
-		# strip punct, remove stopwords
-		# maybe this should be a whitelist of the top 10000 most common keywords instead of a blacklist
-
-		punctuation = re.compile(r'[.?!,":;]') 
-		stopwords = ['all', 'just', 'being', 'over', 'both', 'through', 'yourselves', 'its', 'before', 'herself', 'had', 'should', 'to', 'only', 'under', 'ours', 'has', 'do', 'them', 'his', 'very', 'they', 'not', 'during', 'now', 'him', 'nor', 'did', 'this', 'she', 'each', 'further', 'where', 'few', 'because', 'doing', 'some', 'are', 'our', 'ourselves', 'out', 'what', 'for', 'while', 'does', 'above', 'between', 't', 'be', 'we', 'who', 'were', 'here', 'hers', 'by', 'on', 'about', 'of', 'against', 's', 'or', 'own', 'into', 'yourself', 'down', 'your', 'from', 'her', 'their', 'there', 'been', 'whom', 'too', 'themselves', 'was', 'until', 'more', 'himself', 'that', 'but', 'don', 'with', 'than', 'those', 'he', 'me', 'myself', 'these', 'up', 'will', 'below', 'can', 'theirs', 'my', 'and', 'then', 'is', 'am', 'it', 'an', 'as', 'itself', 'at', 'have', 'in', 'any', 'if', 'again', 'no', 'when', 'same', 'how', 'other', 'which', 'you', 'after', 'most', 'such', 'why', 'a', 'off', 'i', 'yours', 'so', 'the', 'having', 'once', 're', 've', 'll']
-
-		newlist = list()
-		freq = collections.Counter()
-
-		for word in s:
-			word = punctuation.sub("", word)
-			if word not in stopwords:
-				newlist.append(word)
-		freq.update(newlist)
-		return freq
-
-
-	def analyze_page(self, the_page):
-
-		opener = urllib.FancyURLopener({})
-		f = opener.open(the_page)
-		soup = BeautifulSoup(f.read())
-		s = URL(the_page).download()
-		#i use both types of url opener
-		self.update_dict(self.build_counter(s), self.get_ad_links(soup, the_page), the_page)
-		print 'Done'
-
-	def update_dict(self, the_word_counts, ad_links, the_page):
-		for ad in ad_links:
-			if ad in self.brand_keywords_all:
-				self.brand_keywords_all[ad] = self.brand_keywords_all[ad] + the_word_counts
-			else:
-				self.brand_keywords_all[ad] = the_word_counts
-
-		dm = self.get_domain(the_page)
-
-		for ad in ad_links:
-			if ad in self.brand_keywords_by_domain:
-				if dm in self.brand_keywords_by_domain[ad]:
-					self.brand_keywords_by_domain[ad][dm] = self.brand_keywords_by_domain[ad][dm] + the_word_counts
-				else:
-					self.brand_keywords_by_domain[ad][dm] = the_word_counts
-			else:
-				self.brand_keywords_by_domain[ad] = {}
-				self.brand_keywords_by_domain[ad][dm] = the_word_counts
 
 	def do_print(self):
 		for brand in self.brand_keywords_all.keys():
